@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מחולל שאלות הסתברות למורים</title>
+<style>
+:root{--bg:#edf7fb;--card:#fff;--ink:#102a3a;--muted:#547086;--line:#cfe4ee;--blue:#087ea4;--blue2:#10b6c9;--danger:#a41f1f;--good:#126b36}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:24px 18px;text-align:center;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white}
+header h1{margin:0 0 8px;font-size:32px}
+header p{margin:0;font-size:17px}
+.wrap{max-width:1280px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:380px 1fr;gap:18px}
+.panel,.paper,.quality{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 28px #0a5a7a18}
+.panel{padding:18px;align-self:start}
+.field{margin:12px 0}.field label{display:block;font-weight:700;margin-bottom:6px}
+input,select{width:100%;padding:10px;border:1px solid #bfd6df;border-radius:10px;font-size:15px;background:#fbfdff;color:#102a3a}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+button{border:0;border-radius:12px;padding:11px 15px;font-weight:700;cursor:pointer;background:var(--blue);color:white}
+button.secondary{background:#234}
+button.light{background:#e8f3f7;color:#123;border:1px solid #bdd5dd}
+.paper{padding:28px;min-height:650px}
+#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;max-width:790px;margin:auto}
+.qhead{display:flex;justify-content:space-between;border-bottom:1px solid #cddce2;padding-bottom:10px;margin-bottom:18px;color:#456;font-size:15px}
+.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}
+.qtext{font-size:21px;line-height:1.55;font-weight:700}
+.center{text-align:center}
+.answers{font-size:20px;line-height:1.9;margin-top:10px}
+.solution{display:none;margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}
+.status{margin-top:14px;padding:12px;border-radius:12px;background:#f8fbfd;border:1px dashed #aac8d4;min-height:44px;line-height:1.55}
+.bad{color:var(--danger);font-weight:700}.good{color:var(--good);font-weight:700}
+svg{max-width:100%;height:auto}
+.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}
+.quality{padding:18px;margin-top:18px}.small{font-size:14px;color:var(--muted);line-height:1.5}
+@media(max-width:980px){.wrap{grid-template-columns:1fr}.panel{order:2}.paper{order:1}}
+@media print{body{background:white}header,.panel,.buttons,.status,.quality{display:none!important}.wrap{display:block;margin:0;padding:0}.paper{box-shadow:none;border:0;padding:0}#questionCard{border:2px solid #111;max-width:none;margin:0}}
+</style>
+</head>
+<body>
+<header>
+<h1>מחולל שאלות הסתברות למורים</h1>
+<p>שאלות מוכנות להדפסה ולהעתקה כתמונה — בלי דמו ובלי כפתורים מזויפים</p>
+</header>
+
+<main class="wrap">
+<section class="panel">
+<h2>הגדרות השאלה</h2>
+
+<div class="field"><label>הקשר מילולי</label><input id="context" value="גלגל המשחק שלפניכם הוא משחק החודש של שי"></div>
+
+<div class="row">
+<div class="field"><label>מספר ניסיונות</label><input id="trials" type="number" value="600" min="1"></div>
+<div class="field"><label>רמה</label><select id="level"><option>בסיסית</option><option>בינונית</option><option>מתקדמת</option></select></div>
+</div>
+
+<div class="field"><label>סוג ייצוג</label>
+<select id="visualType">
+<option value="wheel">גלגל משחק</option>
+<option value="pie">דיאגרמת עוגה</option>
+<option value="balls">שקית כדורים</option>
+</select>
+</div>
+
+<div class="field"><label>שמות קטגוריות, מופרדים בפסיקים</label><input id="categoryNames" value="אדום, כחול, ירוק, צהוב"></div>
+<div class="field"><label>אחוזים, מופרדים בפסיקים ומסתכמים ל־100</label><input id="categoryPercents" value="10,20,30,40"></div>
+<div class="field"><label>קטגוריית יעד</label><input id="targetName" value="אדום"></div>
+
+<div class="field"><label>פורמט תשובה</label>
+<select id="format">
+<option>רב־ברירה</option>
+<option>פתוחה</option>
+<option>נכון/לא נכון עם נימוק</option>
+</select>
+</div>
+
+<div class="field"><label>ניקוד</label><input id="points" value="4 נקודות"></div>
+
+<div class="buttons">
+<button onclick="generate()">צור שאלה חדשה</button>
+<button onclick="copyPng()">העתק לדף עבודה כתמונה</button>
+<button onclick="downloadPng()" class="secondary">הורד PNG</button>
+<button onclick="copyText()" class="light">העתק טקסט בלבד</button>
+<button onclick="copyHtml()" class="light">העתק HTML</button>
+<button onclick="toggleSolution()" class="light">הצג/הסתר פתרון</button>
+<button onclick="window.print()" class="secondary">הדפס</button>
+</div>
+
+<div id="status" class="status">מוכן. הכפתור הראשי ינסה להעתיק תמונת PNG אמיתית של כל השאלה.</div>
+</section>
+
+<section>
+<div class="paper">
+<div id="questionCard">
+<div class="qhead"><span>שם: ____________</span><span id="pointsBox">4 נקודות</span><span>תאריך: ____________</span></div>
+<div class="qtitle">שאלה בהסתברות</div>
+<div class="qtext" id="qText"></div>
+<div class="center" id="visualBox"></div>
+<div class="answers" id="answers"></div>
+<div class="solution" id="solution"></div>
+</div>
+</div>
+
+<div class="quality">
+<h2>בדיקת איכות למורה</h2>
+<div id="qualityBox" class="small"></div>
+</div>
+</section>
+</main>
+
+<script>
+let state = {};
+function el(id){return document.getElementById(id)}
+function setStatus(msg,ok=true){el("status").innerHTML='<span class="'+(ok?'good':'bad')+'">'+msg+'</span>'}
+function gcd(a,b){return b?gcd(b,a%b):Math.abs(a)}
+function pctToFraction(p){let g=gcd(p,100);return (p/g)+"/"+(100/g)}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function parseCategories(){
+let names=el("categoryNames").value.split(",").map(x=>x.trim()).filter(Boolean);
+let percents=el("categoryPercents").value.split(",").map(x=>Number(x.trim())).filter(x=>!Number.isNaN(x));
+if(names.length!==percents.length)throw new Error("מספר שמות הקטגוריות חייב להתאים למספר האחוזים.");
+let sum=percents.reduce((a,b)=>a+b,0);
+if(Math.abs(sum-100)>0.001)throw new Error("האחוזים חייבים להסתכם ל־100.");
+return names.map((name,i)=>({name,percent:percents[i]}));
+}
+function slicePath(cx,cy,r,a0,a1){
+const x0=cx+r*Math.cos(a0),y0=cy+r*Math.sin(a0),x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1);
+const large=(a1-a0)>Math.PI?1:0;
+return `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1} Z`;
+}
+function makeVisual(categories,type){
+const colors=["#e53935","#1e88e5","#43a047","#fdd835","#8e24aa","#fb8c00","#00acc1","#6d4c41"];
+if(type==="balls"){
+let total=20,balls=[];
+categories.forEach((c,i)=>{for(let k=0;k<Math.round(c.percent/100*total);k++)balls.push({color:colors[i%colors.length]})});
+while(balls.length<total)balls.push({color:colors[0]});balls=balls.slice(0,total);
+let svg=`<svg width="420" height="330" viewBox="0 0 420 330" xmlns="http://www.w3.org/2000/svg"><rect x="55" y="35" width="310" height="255" rx="28" fill="#f7fcff" stroke="#c6dde8" stroke-width="2"/><text x="210" y="70" text-anchor="middle" font-size="21" font-weight="800" fill="#102a3a">שקית כדורים</text>`;
+balls.forEach((b,i)=>{let col=i%5,row=Math.floor(i/5);svg+=`<circle cx="${115+col*48}" cy="${105+row*47}" r="20" fill="${b.color}" stroke="#fff" stroke-width="3"/>`});
+svg+=`</svg>`;
+return svg+legend(categories,colors);
+}
+let title=type==="pie"?"דיאגרמת עוגה":"גלגל משחק";
+let svg=`<svg width="420" height="330" viewBox="0 0 420 330" xmlns="http://www.w3.org/2000/svg"><rect x="35" y="15" width="350" height="300" rx="22" fill="#f7fcff" stroke="#c6dde8" stroke-width="2"/><text x="210" y="48" text-anchor="middle" font-size="21" font-weight="800" fill="#102a3a">${title}</text>`;
+let start=-Math.PI/2;
+categories.forEach((c,i)=>{
+let ang=c.percent/100*Math.PI*2,end=start+ang,mid=(start+end)/2;
+svg+=`<path d="${slicePath(210,165,105,start,end)}" fill="${colors[i%colors.length]}" stroke="#fff" stroke-width="4"/>`;
+svg+=`<text x="${210+66*Math.cos(mid)}" y="${165+66*Math.sin(mid)}" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="800" fill="#111">${c.name}</text>`;
+start=end;
+});
+if(type==="wheel"){svg+=`<circle cx="210" cy="165" r="13" fill="#fff" stroke="#102a3a" stroke-width="3"/><line x1="210" y1="165" x2="210" y2="58" stroke="#102a3a" stroke-width="5" stroke-linecap="round"/><polygon points="210,42 198,66 222,66" fill="#102a3a"/>`}
+svg+=`</svg>`;
+return svg+legend(categories,colors);
+}
+function legend(categories,colors){return `<div class="legend">`+categories.map((c,i)=>`<span><i class="swatch" style="background:${colors[i%colors.length]}"></i>${c.name} (${c.percent}%)</span>`).join("")+`</div>`}
+function distractors(correct,trials,percent){
+const set=new Set([correct]);[correct/2,correct+10,correct-10,trials*(100-percent)/100,trials/4,trials/10,percent].forEach(x=>{x=Math.round(x);if(x>=0&&x!==correct)set.add(x)});
+let arr=[...set];let add=1;while(arr.length<4){let v=correct+add*7;if(!arr.includes(v))arr.push(v);add++}return shuffle(arr.slice(0,4));
+}
+function generate(){
+try{
+const categories=parseCategories(),trials=Number(el("trials").value)||600,targetName=el("targetName").value.trim();
+const target=categories.find(c=>c.name===targetName)||categories[0],percent=target.percent,correct=Math.round(trials*percent/100);
+el("pointsBox").textContent=el("points").value.trim()||"4 נקודות";
+el("qText").textContent=`${el("context").value.trim()}. מתוך ${trials} ניסיונות, כמה פעמים בערך נצפה שתתקבל הקטגוריה ${target.name}?`;
+el("visualBox").innerHTML=makeVisual(categories,el("visualType").value);
+let format=el("format").value;
+if(format==="פתוחה"){el("answers").innerHTML="תשובה: ________________________________<br>נימוק: ________________________________"}
+else if(format==="נכון/לא נכון עם נימוק"){el("answers").innerHTML=`הטענה: מתוך ${trials} ניסיונות נקבל בדיוק ${correct} פעמים את הקטגוריה ${target.name}.<br>נכון / לא נכון<br>נימוק: ________________________________`}
+else{el("answers").innerHTML=distractors(correct,trials,percent).map((o,i)=>`${["א","ב","ג","ד"][i]}. ${o}`).join("<br>")}
+el("solution").innerHTML=`<b>פתרון למורה:</b><br>ההסתברות לקטגוריה ${target.name} היא ${percent}% = ${pctToFraction(percent)}.<br>מספר צפוי = הסתברות × מספר ניסיונות = ${percent}/100 × ${trials} = <b>${correct}</b>.<br>המילה "בערך" חשובה: בניסוי אמיתי התוצאה אינה מובטחת בדיוק.`;
+el("qualityBox").innerHTML=`תשובה נכונה: <b>${correct}</b><br>רמת קושי: <b>${el("level").value}</b><br>מיומנויות: קריאת ייצוג גרפי, שכיחות יחסית, הסתברות ופרופורציה.<br>בדיקת תקינות: האחוזים מסתכמים ל־100 והשאלה פתירה.`;
+state={categories,trials,target,percent,correct};
+setStatus("נוצרה שאלה חדשה. עכשיו אפשר להעתיק כתמונה, להוריד PNG או להדפיס.",true);
+}catch(e){setStatus("שגיאה בהגדרות: "+e.message,false)}
+}
+async function cardToBlob(){
+const node=el("questionCard"),rect=node.getBoundingClientRect(),scale=3,clone=node.cloneNode(true);
+const sol=clone.querySelector(".solution");if(sol)sol.style.display=getComputedStyle(el("solution")).display;
+const css=`<style>*{box-sizing:border-box}#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;width:${rect.width}px;font-family:Arial,"Noto Sans Hebrew",sans-serif;color:#102a3a}.qhead{display:flex;justify-content:space-between;border-bottom:1px solid #cddce2;padding-bottom:10px;margin-bottom:18px;color:#456;font-size:15px}.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}.qtext{font-size:21px;line-height:1.55;font-weight:700}.center{text-align:center}.answers{font-size:20px;line-height:1.9;margin-top:10px}.solution{margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}svg{max-width:100%;height:auto}</style>`;
+const html=`<div xmlns="http://www.w3.org/1999/xhtml" dir="rtl">${css}${clone.outerHTML}</div>`;
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width*scale}" height="${rect.height*scale}" viewBox="0 0 ${rect.width} ${rect.height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
+const img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
+await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+const canvas=document.createElement("canvas");canvas.width=rect.width*scale;canvas.height=rect.height*scale;
+const ctx=canvas.getContext("2d");ctx.fillStyle="white";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
+return await new Promise(res=>canvas.toBlob(res,"image/png",1));
+}
+async function copyPng(){
+try{
+if(!navigator.clipboard||!window.ClipboardItem)throw new Error("הדפדפן לא מאפשר העתקת תמונה ישירה ללוח. צריך HTTPS ודפדפן תומך.");
+const blob=await cardToBlob();await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+setStatus("השאלה הועתקה כתמונת PNG מלאה. אפשר להדביק בוורד, קנבה או Google Docs.",true);
+}catch(e){setStatus("לא הועתקה תמונה. הסיבה: "+e.message+" השתמש בכפתור הורד PNG.",false)}
+}
+async function downloadPng(){
+try{const blob=await cardToBlob(),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="probability-question.png";a.click();URL.revokeObjectURL(a.href);setStatus("קובץ PNG ירד למחשב.",true)}
+catch(e){setStatus("הורדת PNG נכשלה: "+e.message,false)}
+}
+async function copyText(){
+try{await navigator.clipboard.writeText(el("questionCard").innerText);setStatus("הועתק טקסט בלבד. זה לא כולל ציור.",true)}
+catch(e){setStatus("העתקת טקסט נכשלה: "+e.message,false)}
+}
+async function copyHtml(){
+try{
+const html=el("questionCard").outerHTML,plain=el("questionCard").innerText;
+if(navigator.clipboard&&window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([plain],{type:"text/plain"})})]);setStatus("הועתק HTML עשיר. אם העורך לא תומך, השתמש בהעתקה כתמונה.",true)}
+else{await navigator.clipboard.writeText(plain);setStatus("הדפדפן לא תמך ב־HTML, הועתק טקסט בלבד.",false)}
+}catch(e){setStatus("העתקת HTML נכשלה: "+e.message,false)}
+}
+function toggleSolution(){const s=el("solution");s.style.display=s.style.display==="block"?"none":"block"}
+generate();
+</script>
+</body>
+</html>
