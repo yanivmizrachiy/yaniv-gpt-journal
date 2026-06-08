@@ -173,36 +173,53 @@ state={categories,trials,target,percent,correct,level};
 setStatus("נוצרה שאלה חדשה. עכשיו אפשר להעתיק כתמונה, להוריד PNG או להדפיס.",true);
 }catch(e){setStatus("שגיאה בהגדרות: "+e.message,false)}
 }
+function loadHtml2Canvas(){
+  return new Promise((resolve,reject)=>{
+    if(window.html2canvas){resolve(window.html2canvas);return;}
+    const existing=document.querySelector('script[data-yaniv-html2canvas="true"]');
+    if(existing){
+      existing.addEventListener("load",()=>resolve(window.html2canvas));
+      existing.addEventListener("error",()=>reject(new Error("טעינת רכיב צילום השאלה נכשלה")));
+      return;
+    }
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+    s.async=true;
+    s.dataset.yanivHtml2canvas="true";
+    s.onload=()=>window.html2canvas?resolve(window.html2canvas):reject(new Error("רכיב צילום השאלה לא נטען"));
+    s.onerror=()=>reject(new Error("טעינת רכיב צילום השאלה נכשלה"));
+    document.head.appendChild(s);
+  });
+}
+
 async function cardToBlob(){
-  if(!window.html2canvas){
-    throw new Error("רכיב יצירת התמונה עדיין לא נטען. רענן את הדף ונסה שוב.");
-  }
+  const html2canvasLib=await loadHtml2Canvas();
 
   const node=el("questionCard");
   if(!node){
     throw new Error("לא נמצא כרטיס השאלה לצילום.");
   }
 
+  generate();
+
   if(document.fonts&&document.fonts.ready){
     try{await document.fonts.ready}catch(e){}
   }
 
-  const canvas=await html2canvas(node,{
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+  const canvas=await html2canvasLib(node,{
     backgroundColor:"#ffffff",
     scale:3,
     useCORS:true,
-    allowTaint:true,
-    logging:false,
-    scrollX:0,
-    scrollY:0,
-    windowWidth:document.documentElement.clientWidth,
-    windowHeight:document.documentElement.clientHeight
+    allowTaint:false,
+    logging:false
   });
 
   return await new Promise((resolve,reject)=>{
     canvas.toBlob(blob=>{
       if(blob){resolve(blob)}
-      else{reject(new Error("יצירת קובץ PNG מהשאלה נכשלה."))}
+      else{reject(new Error("יצירת תמונת PNG מהשאלה נכשלה"))}
     },"image/png",1);
   });
 }
@@ -216,12 +233,12 @@ async function copyPng(){
       throw new Error("הדפדפן הזה לא תומך בהעתקת תמונה ללוח. נסה Chrome או Edge.");
     }
 
-    setStatus("מכין תמונה מלאה של השאלה...",true);
+    setStatus("מכין תמונה מלאה של השאלה עם הציור...",true);
 
     const blob=await cardToBlob();
     await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
 
-    setStatus("התמונה הועתקה ללוח. עכשיו עבור לקנבה או לוורד ולחץ Ctrl+V כדי להדביק את כל השאלה עם הציור.",true);
+    setStatus("התמונה הועתקה ללוח. עכשיו עבור לקנבה או לוורד ולחץ Ctrl+V.",true);
   }catch(e){
     const msg=(e&&e.message)?e.message:String(e||"שגיאה לא מזוהה");
     setStatus("לא הועתקה תמונה: "+msg,false);
@@ -250,6 +267,7 @@ generate();
 </script>
 </body>
 </html>
+
 
 
 
