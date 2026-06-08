@@ -161,7 +161,10 @@ function generate(){
 try{
 const categories=parseCategories(),trials=Number(el("trials").value)||600,targetName=el("targetName").value.trim();
 const target=categories.find(c=>c.name===targetName)||categories[0],percent=target.percent,correct=Math.round(trials*percent/100);
-el("qText").textContent=`${el("context").value.trim()}. מתוך ${trials} ניסיונות, כמה פעמים בערך נצפה שתתקבל הקטגוריה ${target.name}?`;
+const level=el("level").value;
+const baseQuestion=`${el("context").value.trim()}. מתוך ${trials} ניסיונות, כמה פעמים בערך נצפה שתתקבל הקטגוריה ${target.name}?`;
+const levelSuffix=level==="בסיסית"?"":(level==="בינונית"?" הציגו חישוב קצר.":" כתבו גם את ההסתברות כשבר פשוט, והסבירו מדוע זו תוצאה צפויה בערך ולא ודאית.");
+el("qText").textContent=baseQuestion+levelSuffix;
 el("visualBox").innerHTML=makeVisual(categories,el("visualType").value);
 let format=el("format").value;
 if(format==="פתוחה"){el("answers").innerHTML="תשובה: ________________________________<br>נימוק: ________________________________"}
@@ -169,7 +172,7 @@ else if(format==="נכון/לא נכון עם נימוק"){el("answers").innerHT
 else{el("answers").innerHTML=distractors(correct,trials,percent).map((o,i)=>`${["א","ב","ג","ד"][i]}. ${o}`).join("<br>")}
 el("solution").innerHTML=`<b>פתרון למורה:</b><br>ההסתברות לקטגוריה ${target.name} היא ${percent}% = ${pctToFraction(percent)}.<br>מספר צפוי = הסתברות × מספר ניסיונות = ${percent}/100 × ${trials} = <b>${correct}</b>.<br>המילה "בערך" חשובה: בניסוי אמיתי התוצאה אינה מובטחת בדיוק.`;
 el("qualityBox").innerHTML=`תשובה נכונה: <b>${correct}</b><br>רמת קושי: <b>${el("level").value}</b><br>מיומנויות: קריאת ייצוג גרפי, שכיחות יחסית, הסתברות ופרופורציה.<br>בדיקת תקינות: האחוזים מסתכמים ל־100 והשאלה פתירה.`;
-state={categories,trials,target,percent,correct};
+state={categories,trials,target,percent,correct,level};
 setStatus("נוצרה שאלה חדשה. עכשיו אפשר להעתיק כתמונה, להוריד PNG או להדפיס.",true);
 }catch(e){setStatus("שגיאה בהגדרות: "+e.message,false)}
 }
@@ -212,5 +215,6 @@ generate();
 </script>
 </body>
 </html>
+
 
 
