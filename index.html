@@ -176,24 +176,31 @@ setStatus("נוצרה שאלה חדשה. עכשיו אפשר להעתיק כתמ
 async function cardToBlob(){
 if(document.fonts&&document.fonts.ready){try{await document.fonts.ready}catch(e){}}
 const node=el("questionCard"),rect=node.getBoundingClientRect(),scale=3,clone=node.cloneNode(true);
+const width=Math.ceil(rect.width)||800,height=Math.ceil(rect.height)||600;
 const sol=clone.querySelector(".solution");if(sol)sol.style.display=getComputedStyle(el("solution")).display;
-const css=`<style>*{box-sizing:border-box}#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;width:${rect.width}px;font-family:Arial,"Noto Sans Hebrew",sans-serif;color:#102a3a}.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}.qtext{font-size:21px;line-height:1.55;font-weight:700}.center{text-align:center}.answers{font-size:20px;line-height:1.9;margin-top:10px}.solution{margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}svg{max-width:100%;height:auto}</style>`;
-const html=`<div xmlns="http://www.w3.org/1999/xhtml" dir="rtl">${css}${clone.outerHTML}</div>`;
-const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width*scale}" height="${rect.height*scale}" viewBox="0 0 ${rect.width} ${rect.height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
-const img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
-await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
-const canvas=document.createElement("canvas");canvas.width=rect.width*scale;canvas.height=rect.height*scale;
-const ctx=canvas.getContext("2d");ctx.fillStyle="white";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);
-return await new Promise(res=>canvas.toBlob(res,"image/png",1));
+const css=`<style>*{box-sizing:border-box}#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;width:${width}px;font-family:Arial,"Noto Sans Hebrew",sans-serif;color:#102a3a}.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}.qtext{font-size:21px;line-height:1.55;font-weight:700}.center{text-align:center}.answers{font-size:20px;line-height:1.9;margin-top:10px}.solution{margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}svg{max-width:100%;height:auto}</style>`;
+let markup=clone.outerHTML.replace(/<br>/g,"<br/>").replace(/&nbsp;/g,"&#160;");
+const html=`<div xmlns="http://www.w3.org/1999/xhtml" dir="rtl">${css}${markup}</div>`;
+const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${width*scale}" height="${height*scale}" viewBox="0 0 ${width} ${height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
+const img=new Image();
+const url="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+await new Promise((res,rej)=>{img.onload=res;img.onerror=()=>rej(new Error("הדפדפן לא הצליח לבנות תמונה מהשאלה"));img.src=url});
+const canvas=document.createElement("canvas");canvas.width=width*scale;canvas.height=height*scale;
+const ctx=canvas.getContext("2d");ctx.fillStyle="white";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+return await new Promise((res,rej)=>canvas.toBlob(blob=>blob?res(blob):rej(new Error("יצירת PNG נכשלה")),"image/png",1));
 }
 async function copyPng(){
 try{
-if(!navigator.clipboard||!window.ClipboardItem)throw new Error("הדפדפן לא מאפשר העתקת תמונה ישירה ללוח. צריך HTTPS ודפדפן תומך.");
-const blob=await cardToBlob();await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+if(!window.isSecureContext)throw new Error("האתר חייב להיפתח בקישור HTTPS");
+if(!navigator.clipboard||!window.ClipboardItem)throw new Error("הדפדפן לא תומך בהעתקת תמונות ללוח");
+const blob=await cardToBlob();
+await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
 setStatus("התמונה הועתקה ללוח. עכשיו עבור לקנבה או לוורד ולחץ Ctrl+V כדי להדביק את כל השאלה עם הציור.",true);
-}catch(e){setStatus("לא הועתקה תמונה. הסיבה: "+e.message+" השתמש בכפתור הורד PNG.",false)}
+}catch(e){
+const msg=(e&&e.message)?e.message:String(e||"שגיאה לא ידועה");
+setStatus("לא הועתקה תמונה: "+msg+". נסה Chrome או Edge ולחץ ישירות על כפתור ההעתקה.",false);
 }
-async function downloadPng(){
+}async function downloadPng(){
 try{const blob=await cardToBlob(),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="probability-question.png";a.click();URL.revokeObjectURL(a.href);setStatus("קובץ PNG ירד למחשב.",true)}
 catch(e){setStatus("הורדת PNG נכשלה: "+e.message,false)}
 }
@@ -213,6 +220,7 @@ generate();
 </script>
 </body>
 </html>
+
 
 
 
