@@ -23,7 +23,7 @@ button.secondary{background:#234}
 button.light{background:#e8f3f7;color:#123;border:1px solid #bdd5dd}
 .paper{padding:28px;min-height:650px}
 #questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;max-width:790px;margin:auto}
-.qhead{display:flex;justify-content:space-between;border-bottom:1px solid #cddce2;padding-bottom:10px;margin-bottom:18px;color:#456;font-size:15px}
+
 .qtitle{font-size:18px;font-weight:800;margin-bottom:10px}
 .qtext{font-size:21px;line-height:1.55;font-weight:700}
 .center{text-align:center}
@@ -77,8 +77,6 @@ svg{max-width:100%;height:auto}
 </select>
 </div>
 
-<div class="field"><label>ניקוד</label><input id="points" value="4 נקודות"></div>
-
 <div class="buttons">
 <button onclick="generate()">צור שאלה חדשה</button>
 <button onclick="copyPng()">העתק לדף עבודה כתמונה</button>
@@ -95,7 +93,6 @@ svg{max-width:100%;height:auto}
 <section>
 <div class="paper">
 <div id="questionCard">
-<div class="qhead"><span>שם: ____________</span><span id="pointsBox">4 נקודות</span><span>תאריך: ____________</span></div>
 <div class="qtitle">שאלה בהסתברות</div>
 <div class="qtext" id="qText"></div>
 <div class="center" id="visualBox"></div>
@@ -164,7 +161,6 @@ function generate(){
 try{
 const categories=parseCategories(),trials=Number(el("trials").value)||600,targetName=el("targetName").value.trim();
 const target=categories.find(c=>c.name===targetName)||categories[0],percent=target.percent,correct=Math.round(trials*percent/100);
-el("pointsBox").textContent=el("points").value.trim()||"4 נקודות";
 el("qText").textContent=`${el("context").value.trim()}. מתוך ${trials} ניסיונות, כמה פעמים בערך נצפה שתתקבל הקטגוריה ${target.name}?`;
 el("visualBox").innerHTML=makeVisual(categories,el("visualType").value);
 let format=el("format").value;
@@ -180,7 +176,7 @@ setStatus("נוצרה שאלה חדשה. עכשיו אפשר להעתיק כתמ
 async function cardToBlob(){
 const node=el("questionCard"),rect=node.getBoundingClientRect(),scale=3,clone=node.cloneNode(true);
 const sol=clone.querySelector(".solution");if(sol)sol.style.display=getComputedStyle(el("solution")).display;
-const css=`<style>*{box-sizing:border-box}#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;width:${rect.width}px;font-family:Arial,"Noto Sans Hebrew",sans-serif;color:#102a3a}.qhead{display:flex;justify-content:space-between;border-bottom:1px solid #cddce2;padding-bottom:10px;margin-bottom:18px;color:#456;font-size:15px}.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}.qtext{font-size:21px;line-height:1.55;font-weight:700}.center{text-align:center}.answers{font-size:20px;line-height:1.9;margin-top:10px}.solution{margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}svg{max-width:100%;height:auto}</style>`;
+const css=`<style>*{box-sizing:border-box}#questionCard{background:white;border:2px solid #1c3f50;border-radius:14px;padding:24px;width:${rect.width}px;font-family:Arial,"Noto Sans Hebrew",sans-serif;color:#102a3a}.qtitle{font-size:18px;font-weight:800;margin-bottom:10px}.qtext{font-size:21px;line-height:1.55;font-weight:700}.center{text-align:center}.answers{font-size:20px;line-height:1.9;margin-top:10px}.solution{margin-top:18px;background:#f3fbff;border:1px solid #bfe4ee;border-radius:12px;padding:14px;line-height:1.7}.legend{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:14px}.legend span{display:inline-flex;align-items:center;gap:6px}.swatch{width:14px;height:14px;border-radius:3px;display:inline-block}svg{max-width:100%;height:auto}</style>`;
 const html=`<div xmlns="http://www.w3.org/1999/xhtml" dir="rtl">${css}${clone.outerHTML}</div>`;
 const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width*scale}" height="${rect.height*scale}" viewBox="0 0 ${rect.width} ${rect.height}"><foreignObject width="100%" height="100%">${html}</foreignObject></svg>`;
 const img=new Image(),url=URL.createObjectURL(new Blob([svg],{type:"image/svg+xml;charset=utf-8"}));
@@ -216,3 +212,4 @@ generate();
 </script>
 </body>
 </html>
+
