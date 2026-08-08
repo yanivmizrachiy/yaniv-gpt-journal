@@ -1,10 +1,9 @@
-# מחולל שאלות הסתברות למורים
+# yaniv-knowledge-center
 
-כלי עברי ליצירת שאלות הסתברות מוכנות להדפסה ולהעתקה כתמונה.
+Private knowledge center placeholder.
 
-## שימוש
-1. מגדירים מספר ניסיונות, קטגוריות ואחוזים.
-2. יוצרים שאלה.
-3. מעתיקים כתמונה, מורידים PNG או מדפיסים.
+This repository is reserved for Yaniv's personal knowledge archive.
 
-הכפתור הראשי חייב להעתיק תמונה אמיתית, לא רק טקסט.
+Do not add personal or sensitive content until the repository visibility is confirmed as private.
+
+Current status: public placeholder only.
